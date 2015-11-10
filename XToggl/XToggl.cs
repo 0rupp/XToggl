@@ -6,23 +6,14 @@ namespace XToggl
 {
 	public class App : Application
 	{
-		public App ()
-		{
-			var apiKey="211b283336f7055a287578fd1eed09bd";
-			var t = new Toggl.Toggl(apiKey);
-			var c = t.User.GetCurrent();
+		const string apiKey = "211b283336f7055a287578fd1eed09bd";
+		private static Toggl.Toggl _t = new Toggl.Toggl(apiKey);
 
-			MainPage = new ContentPage {
-				Content = new StackLayout {
-					VerticalOptions = LayoutOptions.Center,
-					Children = {
-						new Label {
-							XAlign = TextAlignment.Center,
-							Text = c.FullName
-						}
-					}
-				}
-			};
+		public static Toggl.Toggl Toggl { get { return _t; } }
+
+		public App ()
+		{	
+			MainPage = new Main ();
 		}
 
 		protected override void OnStart ()
