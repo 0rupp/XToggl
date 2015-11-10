@@ -8,14 +8,17 @@ namespace XToggl
 	{
 		public App ()
 		{
-			// The root page of your application
+			var apiKey="211b283336f7055a287578fd1eed09bd";
+			var t = new Toggl.Toggl(apiKey);
+			var c = t.User.GetCurrent();
+
 			MainPage = new ContentPage {
 				Content = new StackLayout {
 					VerticalOptions = LayoutOptions.Center,
 					Children = {
 						new Label {
 							XAlign = TextAlignment.Center,
-							Text = "Welcome to Xamarin Forms!"
+							Text = c.FullName
 						}
 					}
 				}
