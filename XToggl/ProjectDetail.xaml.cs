@@ -15,6 +15,9 @@ namespace XToggl
 
 			var timeEntries = App.Toggl.TimeEntry.List (new TimeEntryParams { ProjectId = p.Id });
 			list.ItemsSource = timeEntries;
+			list.ItemSelected += (sender, e) => {
+				((ListView)sender).SelectedItem = null;
+			};
 		}
 	}
 }

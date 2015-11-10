@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.ComponentModel;
+using Parallel = System.Threading.Tasks;
 using Xamarin.Forms;
 
 using Toggl;
@@ -10,7 +11,8 @@ namespace XToggl
 {
 	public partial class Main : ContentPage
 	{
-		private DateTime? _startedDateTime = null;
+		private TimeEntry _startedTimeEntry = null;
+		private DateTime? _startedDateTime;
 
 		public Main ()
 		{
@@ -42,11 +44,16 @@ namespace XToggl
 			var btn = ((Button)sender);
 			btn.IsVisible = false;
 
-			var parent = btn.ParentView as StackLayout;
-			var stopBtn = parent.Children [2] as Button;
-			stopBtn.IsVisible = true;
+			var project = btn.CommandParameter as Toggl.Project;
 
 			_startedDateTime = DateTime.Now;
+
+			Parallel.Task.Factory
+				.StartNew (() => AddTimeEntry (project))
+				.ContinueWith ((entry) => ChangeButtonVisibility (btn.ParentView as StackLayout, 2, true));
+
+			
+
 		}
 
 		public void Stop(object sender, EventArgs e)
@@ -54,25 +61,46 @@ namespace XToggl
 			var btn = ((Button)sender);
 			btn.IsVisible = false;
 
-			var project = btn.CommandParameter as Toggl.Project;
+			Parallel.Task.Factory
+				.StartNew (() => EditTimeEntry ())
+				.ContinueWith ((entry) => 
+					{
+						ChangeButtonVisibility (btn.ParentView as StackLayout, 1, true);
+						_startedTimeEntry = null;
+						_startedDateTime = null;
+					});
+			
 
+		}
+
+		private void AddTimeEntry(Project project) 
+		{
+			_startedTimeEntry = App.Toggl.TimeEntry.Add (
+				new TimeEntry {
+					IsBillable = false,
+					CreatedWith = "TogglAPI.Net",
+					Start = _startedDateTime.Value.ToIsoDateStr (),
+					Duration = -1,
+					WorkspaceId = project.WorkspaceId,
+					ProjectId = project.Id
+				});
+		}
+
+		private void EditTimeEntry() 
+		{
 			var now = DateTime.Now;
-			var timeEntry = new TimeEntry () {
-				IsBillable = false,
-				CreatedWith = "TogglAPI.Net",
-				Stop = now.ToIsoDateStr (),
-				Start = _startedDateTime.Value.ToIsoDateStr (),
-				Duration = now.Subtract (_startedDateTime.Value).Seconds,
-				WorkspaceId = project.WorkspaceId,
-				ProjectId = project.Id
-			};
-			App.Toggl.TimeEntry.Add (timeEntry);
+			_startedTimeEntry.Stop = now.ToIsoDateStr ();
+			_startedTimeEntry.Duration = now.Subtract (_startedDateTime.Value).Seconds;
 
-			_startedDateTime = null;
+			App.Toggl.TimeEntry.Edit (_startedTimeEntry);
+		}
 
-			var parent = btn.ParentView as StackLayout;
-			var startBtn = parent.Children [1] as Button;
-			startBtn.IsVisible = true;
+		private void ChangeButtonVisibility(StackLayout layout, int btnIndex, bool visible)
+		{
+			Device.BeginInvokeOnMainThread (() => {
+				var stopBtn = layout.Children [btnIndex] as Button;
+				stopBtn.IsVisible = visible;
+			});
 		}
 
 	}
