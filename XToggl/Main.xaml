@@ -1,5 +1,27 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="XToggl.Main">
 	<ContentPage.Content>
+	<StackLayout VerticalOptions="Center">
+
+		<Label x:Name="header" XAlign="Center" ></Label>
+
+		<ListView x:Name="list">
+			<ListView.ItemTemplate>
+			    <DataTemplate>
+			      <ViewCell>
+<!--			         <ViewCell.ContextActions>
+			            <MenuItem Clicked="Start"  Text="Start" />
+			         </ViewCell.ContextActions>-->
+			         <StackLayout Padding="15,0" Orientation="Horizontal">
+			             <Label Text="{Binding Name}" />
+						 <Button Text="Start" Clicked="Start" CommandParameter="{Binding .}" />
+						 <Button Text="Stop" Clicked="Stop" CommandParameter="{Binding .}" IsVisible="false" />
+			         </StackLayout>
+			      </ViewCell>
+			    </DataTemplate>
+			  </ListView.ItemTemplate>
+		</ListView>
+
+	</StackLayout>
 	</ContentPage.Content>
 </ContentPage>
