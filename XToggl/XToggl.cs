@@ -13,7 +13,7 @@ namespace XToggl
 
 		public App ()
 		{	
-			MainPage = new Main ();
+			MainPage = new NavigationPage (new Main ());
 		}
 
 		protected override void OnStart ()

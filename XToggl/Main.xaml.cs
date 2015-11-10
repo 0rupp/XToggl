@@ -27,6 +27,10 @@ namespace XToggl
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;
 			};
+			list.ItemTapped += async (sender, e) => {
+				var project = e.Item as Project;
+				await Navigation.PushAsync(new ProjectDetail(project));
+			};
 		}
 
 		public void Start(object sender, EventArgs e)
@@ -59,7 +63,8 @@ namespace XToggl
 				Stop = now.ToIsoDateStr (),
 				Start = _startedDateTime.Value.ToIsoDateStr (),
 				Duration = now.Subtract (_startedDateTime.Value).Seconds,
-				WorkspaceId = project.WorkspaceId
+				WorkspaceId = project.WorkspaceId,
+				ProjectId = project.Id
 			};
 			App.Toggl.TimeEntry.Add (timeEntry);
 
