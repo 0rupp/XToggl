@@ -10,7 +10,7 @@ using Toasts.Forms.Plugin.Abstractions;
 
 namespace XToggl
 {
-	public partial class Main : ContentPage
+	public partial class Main : MasterDetailPage
 	{
 		private TimeEntry _startedTimeEntry = null;
 		private DateTime? _startedDateTime;
@@ -55,8 +55,6 @@ namespace XToggl
 				.StartNew (() => AddTimeEntry (project))
 				.ContinueWith ((entry) => ChangeButtonVisibility (btn.ParentView as StackLayout, 2, true));
 
-			
-
 		}
 
 		public void Stop(object sender, EventArgs e)
@@ -74,6 +72,17 @@ namespace XToggl
 					});
 			
 
+		}
+
+		public void ChangePage(object sender, EventArgs e)
+		{
+			var btn = sender as Button;
+//			App.Notificator.Notify (ToastNotificationType.Info, "", btn.Text, TimeSpan.FromSeconds (5.0), null);
+
+			if(btn.Text.ToLower() == "gps")
+				Navigation.PushAsync(new GpsPage());
+			else if(btn.Text.ToLower() == "nfg")
+				Navigation.PushAsync(new GpsPage());
 		}
 
 		private void AddTimeEntry(Project project) 

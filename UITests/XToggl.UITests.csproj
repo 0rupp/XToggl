@@ -37,9 +37,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Droid\XToggl.Droid.csproj">
+    <ProjectReference Include="..\Droid\Android.csproj">
       <Project>{46E94E19-B3B0-41D7-85C3-20CB2F832F1F}</Project>
-      <Name>XToggl.Droid</Name>
+      <Name>Android</Name>
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <Private>False</Private>
     </ProjectReference>

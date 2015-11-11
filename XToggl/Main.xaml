@@ -1,24 +1,37 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="XToggl.Main">
-	<ContentPage.Content>
-	<StackLayout VerticalOptions="StartAndExpand">
+<MasterDetailPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="XToggl.Main">
 
-		<Label x:Name="header" XAlign="Center" ></Label>
+    <MasterDetailPage.Master>
+		<ContentPage Title="XToggl" Icon="slideout.png">
+			<StackLayout>
+            	<Button Text="Projects" Clicked="ChangePage" />
+            	<Button Text="Gps" Clicked="ChangePage" />
+            	<Button Text="NFC" Clicked="ChangePage" />
+            	<Button Text="Calendar" Clicked="ChangePage" />
+			</StackLayout>
+		</ContentPage>
+	</MasterDetailPage.Master>
+	<MasterDetailPage.Detail>
+		<ContentPage>
+			<StackLayout>
 
-		<ListView x:Name="list" VerticalOptions="FillAndExpand">
-			<ListView.ItemTemplate>
-			    <DataTemplate>
-			      <ViewCell>
-			         <StackLayout Padding="15,0" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
-			             <Label Text="{Binding Name}" />
-						 <Button Text="Start" Clicked="Start" CommandParameter="{Binding .}" />
-						 <Button Text="Stop" Clicked="Stop" CommandParameter="{Binding .}" IsVisible="false" />
-			         </StackLayout>
-			      </ViewCell>
-			    </DataTemplate>
-			  </ListView.ItemTemplate>
-		</ListView>
+				<Label x:Name="header" XAlign="Center" ></Label>
 
-	</StackLayout>
-	</ContentPage.Content>
-</ContentPage>
+				<ListView x:Name="list" VerticalOptions="FillAndExpand">
+					<ListView.ItemTemplate>
+					    <DataTemplate>
+					      <ViewCell>
+					         <StackLayout Padding="15,0" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
+					             <Label Text="{Binding Name}" />
+								 <Button Text="Start" Clicked="Start" CommandParameter="{Binding .}" />
+								 <Button Text="Stop" Clicked="Stop" CommandParameter="{Binding .}" IsVisible="false" />
+					         </StackLayout>
+					      </ViewCell>
+					    </DataTemplate>
+					  </ListView.ItemTemplate>
+				</ListView>
+
+			</StackLayout>
+		</ContentPage>
+	</MasterDetailPage.Detail>
+</MasterDetailPage>

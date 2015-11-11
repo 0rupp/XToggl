@@ -9,10 +9,12 @@ using Android.Widget;
 using Android.OS;
 using Toasts.Forms.Plugin.Droid;
 using XLabs.Forms;
+using Xamarin.Forms;
+using XLabs.Platform.Services.Geolocation;
 
 namespace XToggl.Droid
 {
-	[Activity (Label = "XToggl.Droid", Icon = "@drawable/icon", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+	[Activity (Label = "Loading XToggl ...", Icon = "@drawable/icon", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
 	public class MainActivity : XFormsApplicationDroid
 	{
 		protected override void OnCreate (Bundle bundle)
@@ -22,6 +24,8 @@ namespace XToggl.Droid
 			global::Xamarin.Forms.Forms.Init (this, bundle);
 
 			ToastNotificatorImplementation.Init();
+
+			DependencyService.Register<Geolocator> ();
 
 			LoadApplication (new App ());
 		}

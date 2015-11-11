@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XToggl", "XToggl\XToggl.csproj", "{DBCEA49C-1BCD-435C-8A2A-D63CC4639AF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XToggl.Droid", "Droid\XToggl.Droid.csproj", "{46E94E19-B3B0-41D7-85C3-20CB2F832F1F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Android", "Droid\Android.csproj", "{46E94E19-B3B0-41D7-85C3-20CB2F832F1F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XToggl.UITests", "UITests\XToggl.UITests.csproj", "{8FAD1139-BF1A-42B3-8655-AA168C6B09F2}"
 EndProject
