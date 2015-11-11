@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Xamarin.Forms;
+using Toasts.Forms.Plugin.Abstractions;
 
 namespace XToggl
 {
@@ -10,6 +11,8 @@ namespace XToggl
 		private static Toggl.Toggl _t = new Toggl.Toggl(apiKey);
 
 		public static Toggl.Toggl Toggl { get { return _t; } }
+
+		public static IToastNotificator Notificator { get { return DependencyService.Get<IToastNotificator> (); } }
 
 		public App ()
 		{	

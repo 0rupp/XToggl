@@ -1,19 +1,16 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="XToggl.ProjectDetail">
 	<ContentPage.Content>
-	<StackLayout VerticalOptions="StartAndExpand">
+	<StackLayout>
 
 		<Label x:Name="header" XAlign="Center" ></Label>
 
-		<ListView x:Name="list">
+		<ListView x:Name="list" VerticalOptions="FillAndExpand">
 			<ListView.ItemTemplate>
 			    <DataTemplate>
 			      <ViewCell>
-<!--			         <ViewCell.ContextActions>
-			            <MenuItem Clicked="Start"  Text="Start" />
-			         </ViewCell.ContextActions>-->
-					<StackLayout Padding="15,0" Orientation="Horizontal">
-			         	 <Label Text="{Binding StartDate}" />
+					<StackLayout Padding="15,0" Orientation="Vertical">
+			         	 <Label Text="{Binding Start}" />
 			             <Label Text="{Binding Duration}" />
 			         </StackLayout>
 			      </ViewCell>

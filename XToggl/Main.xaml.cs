@@ -6,6 +6,7 @@ using Xamarin.Forms;
 
 using Toggl;
 using Toggl.Extensions;
+using Toasts.Forms.Plugin.Abstractions;
 
 namespace XToggl
 {
@@ -38,6 +39,8 @@ namespace XToggl
 		public void Start(object sender, EventArgs e)
 		{
 			if (_startedDateTime.HasValue) {
+				App.Notificator.Notify(ToastNotificationType.Info, 
+					"XToggl Message", "Please stop other tasks before starting a new one", TimeSpan.FromSeconds(2));
 				return;
 			}
 
@@ -80,7 +83,7 @@ namespace XToggl
 					IsBillable = false,
 					CreatedWith = "TogglAPI.Net",
 					Start = _startedDateTime.Value.ToIsoDateStr (),
-					Duration = -1,
+					Duration = _startedDateTime.Value.ToTogglStartDuration (),
 					WorkspaceId = project.WorkspaceId,
 					ProjectId = project.Id
 				});
@@ -90,7 +93,7 @@ namespace XToggl
 		{
 			var now = DateTime.Now;
 			_startedTimeEntry.Stop = now.ToIsoDateStr ();
-			_startedTimeEntry.Duration = now.Subtract (_startedDateTime.Value).Seconds;
+			_startedTimeEntry.Duration = _startedDateTime.Value.DifferenceInSeconds (now);
 
 			App.Toggl.TimeEntry.Edit (_startedTimeEntry);
 		}

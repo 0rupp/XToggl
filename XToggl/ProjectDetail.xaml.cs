@@ -18,6 +18,8 @@ namespace XToggl
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;
 			};
+			var cnt = timeEntries.Count;
+			header.Text = cnt + " time entr" + (cnt == 1 ? "y" : "ies");
 		}
 	}
 }

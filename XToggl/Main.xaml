@@ -5,7 +5,7 @@
 
 		<Label x:Name="header" XAlign="Center" ></Label>
 
-		<ListView x:Name="list">
+		<ListView x:Name="list" VerticalOptions="FillAndExpand">
 			<ListView.ItemTemplate>
 			    <DataTemplate>
 			      <ViewCell>
