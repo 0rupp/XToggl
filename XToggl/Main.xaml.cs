@@ -81,8 +81,10 @@ namespace XToggl
 
 			if(btn.Text.ToLower() == "gps")
 				Navigation.PushAsync(new GpsPage());
-			else if(btn.Text.ToLower() == "nfg")
+			else if(btn.Text.ToLower() == "nfc")
 				Navigation.PushAsync(new GpsPage());
+			else if(btn.Text.ToLower() == "calendar")
+				Navigation.PushAsync(new CalendarPage());
 		}
 
 		private void AddTimeEntry(Project project) 
