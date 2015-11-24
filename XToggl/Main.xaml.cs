@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using Parallel = System.Threading.Tasks;
 using Xamarin.Forms;
@@ -12,29 +13,47 @@ namespace XToggl
 {
 	public partial class Main : MasterDetailPage
 	{
-		private TimeEntry _startedTimeEntry = null;
+		private TimeEntry _startedTimeEntry;
 		private DateTime? _startedDateTime;
 
 		public Main ()
 		{
 			InitializeComponent ();
 
-			var u = App.Toggl.User.GetCurrent();
-			header.Text = u.FullName;
+			var currentEntry = App.Toggl.TimeEntry.Current();
+			if (currentEntry.Id.HasValue) {
+				_startedTimeEntry = currentEntry;
+				_startedDateTime = DateTime.Parse (currentEntry.Start);
+			}
 
+			var u = App.Toggl.User.GetCurrent();
 			var projects = App.Toggl.Project.List ();
 			var cnt = projects.Count;
 
-			header.Text = cnt + " project" + (cnt == 1 ? "" : "s");
+			header.Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), u.FullName);
 			list.ItemsSource = projects;
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;
 			};
+
 			list.ItemTapped += async (sender, e) => {
 				var project = e.Item as Project;
 				await Navigation.PushAsync(new ProjectDetail(project));
 			};
+
+//			alert.Clicked += async (object sender, EventArgs e) => 
+//			{
+//				var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for Project 0 now?", "Yes", "No");
+//				if (task) {
+//					var p = list.ItemsSource.Cast<Project> ().First ();
+//					AddTimeEntry (p);
+//				}
+//				else {
+//					App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
+//				}				
+//			};
 		}
+
 
 		public void Start(object sender, EventArgs e)
 		{
@@ -48,8 +67,6 @@ namespace XToggl
 			btn.IsVisible = false;
 
 			var project = btn.CommandParameter as Toggl.Project;
-
-			_startedDateTime = DateTime.Now;
 
 			Parallel.Task.Factory
 				.StartNew (() => AddTimeEntry (project))
@@ -70,15 +87,12 @@ namespace XToggl
 						_startedTimeEntry = null;
 						_startedDateTime = null;
 					});
-			
 
 		}
 
 		public void ChangePage(object sender, EventArgs e)
 		{
 			var btn = sender as Button;
-//			App.Notificator.Notify (ToastNotificationType.Info, "", btn.Text, TimeSpan.FromSeconds (5.0), null);
-
 			if(btn.Text.ToLower() == "gps")
 				Navigation.PushAsync(new GpsPage());
 			else if(btn.Text.ToLower() == "nfc")
@@ -89,6 +103,8 @@ namespace XToggl
 
 		private void AddTimeEntry(Project project) 
 		{
+			_startedDateTime = DateTime.Now;
+
 			_startedTimeEntry = App.Toggl.TimeEntry.Add (
 				new TimeEntry {
 					IsBillable = false,

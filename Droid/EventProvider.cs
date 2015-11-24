@@ -37,7 +37,6 @@ namespace XToggl.Droid
 
 		IList<Event> IEventProvider.GetEventsFromNow ()
 		{
-
 			var eventsUri = CalendarContract.Events.ContentUri;
 
 			string[] eventsProjection = {
