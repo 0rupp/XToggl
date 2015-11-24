@@ -2,7 +2,7 @@
 <MasterDetailPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="XToggl.Main">
 
     <MasterDetailPage.Master>
-		<ContentPage Title="XToggl" Icon="slideout.png">
+		<ContentPage Title="XToggl" Icon="ic_action.png">
 			<StackLayout>
             	<Button Text="Projects" Clicked="ChangePage" />
             	<Button Text="Gps" Clicked="ChangePage" />
