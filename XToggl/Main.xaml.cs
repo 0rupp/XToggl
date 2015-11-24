@@ -8,6 +8,7 @@ using Xamarin.Forms;
 using Toggl;
 using Toggl.Extensions;
 using Toasts.Forms.Plugin.Abstractions;
+using XToggl.Calendar;
 
 namespace XToggl
 {
@@ -15,10 +16,17 @@ namespace XToggl
 	{
 		private TimeEntry _startedTimeEntry;
 		private DateTime? _startedDateTime;
+		private Event _upComingEvent;
 
 		public Main ()
 		{
 			InitializeComponent ();
+
+			var eventProvider = DependencyService.Get<IEventProvider> ();
+			_upComingEvent = eventProvider.GetNextEvent ();
+
+			var eventNotification = DependencyService.Get<IEventNotification> ();
+			eventNotification.RegisterEvent (DateTime.Now.AddSeconds (3), PrintMsg);
 
 			var currentEntry = App.Toggl.TimeEntry.Current();
 			if (currentEntry.Id.HasValue) {
@@ -40,19 +48,25 @@ namespace XToggl
 				var project = e.Item as Project;
 				await Navigation.PushAsync(new ProjectDetail(project));
 			};
-
-//			alert.Clicked += async (object sender, EventArgs e) => 
-//			{
-//				var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for Project 0 now?", "Yes", "No");
-//				if (task) {
-//					var p = list.ItemsSource.Cast<Project> ().First ();
-//					AddTimeEntry (p);
-//				}
-//				else {
-//					App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
-//				}				
-//			};
 		}
+
+
+		private void PrintMsg() {
+			AskForUpcomingEvent ();
+		}
+
+		private async void AskForUpcomingEvent() {
+			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for Project 0 now?", "Yes", "No");
+			if (task) {
+				// später mal einen Bezug vom Event zum Projekt / TimeEntry herstellen !
+				var p = list.ItemsSource.Cast<Project> ().First ();
+				AddTimeEntry (p);
+			}
+			else {
+				App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
+			}			
+		}
+
 
 
 		public void Start(object sender, EventArgs e)

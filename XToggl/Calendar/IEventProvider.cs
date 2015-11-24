@@ -5,5 +5,6 @@ namespace XToggl.Calendar
 {
 	public interface IEventProvider {
 		IList<Event> GetEventsFromNow();
+		Event GetNextEvent();
 	}
 }

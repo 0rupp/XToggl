@@ -30,10 +30,10 @@ namespace XToggl.Droid
 
 			EventProvider.ContentResolver = ContentResolver;
 			DependencyService.Register<EventProvider> ();
+			DependencyService.Register<EventNotification> ();
 			DependencyService.Register<Geolocator> ();
 
 			LoadApplication (new App ());
-
 		}
 	}
 }

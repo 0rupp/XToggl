@@ -37,29 +37,17 @@ namespace XToggl.Droid
 
 		IList<Event> IEventProvider.GetEventsFromNow ()
 		{
-			var eventsUri = CalendarContract.Events.ContentUri;
-
-			string[] eventsProjection = {
-				CalendarContract.Events.InterfaceConsts.Id,
-				CalendarContract.Events.InterfaceConsts.Title,
-				CalendarContract.Events.InterfaceConsts.Dtstart
-			};
-			var ms = (long)new TimeSpan (DateTime.Now.Subtract(new DateTime (1970, 1, 1, 0, 0, 0,
-				DateTimeKind.Utc)).Ticks).TotalMilliseconds;
-
-			var cursor = ContentResolver.Query (eventsUri, eventsProjection,
-				"calendar_id = ? AND dtstart >= ?", new string[] { calendarId.ToString(), ms.ToString() } , "dtstart ASC"); //
+			Android.Database.ICursor cursor = GetCursor ();
 
 			var sourceColumns = new string[] {
 				CalendarContract.Events.InterfaceConsts.Id,
 				CalendarContract.Events.InterfaceConsts.Title,
 				CalendarContract.Events.InterfaceConsts.Dtstart };
-			var cnt = cursor.Count;
-
-			IList<Event> data = new List<Event> (cnt);
+			
+			IList<Event> data = new List<Event> (cursor.Count);
 			if (cursor.MoveToFirst ())
 				do {
-					ms = cursor.GetLong (2);
+					var ms = cursor.GetLong (2);
 					var startDate = ms.ToTogglDateTime();
 					var ev = new Event(cursor.GetLong(0), cursor.GetString (1), startDate);
 					
@@ -70,6 +58,39 @@ namespace XToggl.Droid
 			return data;
 		}
 
+		Event IEventProvider.GetNextEvent ()
+		{
+			Android.Database.ICursor cursor = GetCursor ();
+			var cnt = cursor.Count;
+
+			Event ev = null;
+			IList<Event> data = new List<Event> (cnt);
+			if (cursor.MoveToFirst ()) {
+				var ms = cursor.GetLong (2);
+				var startDate = ms.ToTogglDateTime ();
+				ev = new Event (cursor.GetLong (0), cursor.GetString (1), startDate);
+			}
+			cursor.Close ();
+
+			return ev;
+		}
+
+		private Android.Database.ICursor GetCursor ()
+		{
+			var eventsUri = CalendarContract.Events.ContentUri;
+			string[] eventsProjection =  {
+				CalendarContract.Events.InterfaceConsts.Id,
+				CalendarContract.Events.InterfaceConsts.Title,
+				CalendarContract.Events.InterfaceConsts.Dtstart
+			};
+			var ms = (long)new TimeSpan (DateTime.Now.Subtract (new DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks).TotalMilliseconds;
+			var cursor = ContentResolver.Query (eventsUri, eventsProjection, "calendar_id = ? AND dtstart >= ?", new string[] {
+				calendarId.ToString (),
+				ms.ToString ()
+			}, "dtstart ASC");
+
+			return cursor;
+		}
 		#endregion
 	}
 }

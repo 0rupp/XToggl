@@ -18,6 +18,13 @@ namespace XToggl
 			return (long)end.Subtract (begin).TotalSeconds;
 		}
 
+		public static long MsSinceUpTime(this DateTime dt, long upTimeMs) {
+			var upDate = DateTime.Now.AddMilliseconds (-upTimeMs);
+			var difference = dt.Subtract(upDate);
+			return (long)difference.TotalMilliseconds;
+		}
+
+
 
 
 	}
