@@ -15,15 +15,16 @@ namespace XToggl
 	public partial class Main : MasterDetailPage
 	{
 		private TimeEntry _startedTimeEntry;
+		private Project _selectedProject;
 		private DateTime? _startedDateTime;
-		private Event _upComingEvent;
+		private Event _upcomingEvent;
 
 		public Main ()
 		{
 			InitializeComponent ();
 
 			var eventProvider = DependencyService.Get<IEventProvider> ();
-			_upComingEvent = eventProvider.GetNextEvent ();
+			_upcomingEvent = eventProvider.GetNextEvent ();
 
 			var eventNotification = DependencyService.Get<IEventNotification> ();
 			eventNotification.RegisterEvent (DateTime.Now.AddSeconds (3), PrintMsg);
@@ -44,12 +45,11 @@ namespace XToggl
 				((ListView)sender).SelectedItem = null;
 			};
 
-			list.ItemTapped += async (sender, e) => {
-				var project = e.Item as Project;
-				await Navigation.PushAsync(new ProjectDetail(project));
+			list.ItemTapped += (sender, e) => {
+				_selectedProject = e.Item as Project;
+				selectedProjectText.Text = _selectedProject.Name;
 			};
 		}
-
 
 		private void PrintMsg() {
 			AskForUpcomingEvent ();
@@ -67,8 +67,6 @@ namespace XToggl
 			}			
 		}
 
-
-
 		public void Start(object sender, EventArgs e)
 		{
 			if (_startedDateTime.HasValue) {
@@ -80,12 +78,9 @@ namespace XToggl
 			var btn = ((Button)sender);
 			btn.IsVisible = false;
 
-			var project = btn.CommandParameter as Toggl.Project;
-
 			Parallel.Task.Factory
-				.StartNew (() => AddTimeEntry (project))
-				.ContinueWith ((entry) => ChangeButtonVisibility (btn.ParentView as StackLayout, 2, true));
-
+				.StartNew (() => AddTimeEntry (_selectedProject))
+				.ContinueWith ((entry) => ChangeButtonVisibility (stopBtn));
 		}
 
 		public void Stop(object sender, EventArgs e)
@@ -97,11 +92,18 @@ namespace XToggl
 				.StartNew (() => EditTimeEntry ())
 				.ContinueWith ((entry) => 
 					{
-						ChangeButtonVisibility (btn.ParentView as StackLayout, 1, true);
+						ChangeButtonVisibility (startBtn);
 						_startedTimeEntry = null;
 						_startedDateTime = null;
 					});
 
+		}
+
+		public void Detail(object sender, EventArgs e)
+		{
+			var btn = ((Button)sender);
+			var project = btn.CommandParameter as Project;
+			Navigation.PushAsync (new ProjectDetail (project));
 		}
 
 		public void ChangePage(object sender, EventArgs e)
@@ -139,11 +141,10 @@ namespace XToggl
 			App.Toggl.TimeEntry.Edit (_startedTimeEntry);
 		}
 
-		private void ChangeButtonVisibility(StackLayout layout, int btnIndex, bool visible)
+		private void ChangeButtonVisibility(Button btn)
 		{
 			Device.BeginInvokeOnMainThread (() => {
-				var stopBtn = layout.Children [btnIndex] as Button;
-				stopBtn.IsVisible = visible;
+				btn.IsVisible = !btn.IsVisible;
 			});
 		}
 

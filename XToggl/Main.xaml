@@ -14,17 +14,19 @@
 	<MasterDetailPage.Detail>
 		<ContentPage>
 			<StackLayout>
-
-				<Label x:Name="header" XAlign="Center" ></Label>
-
+				<StackLayout Orientation="Horizontal" VerticalOptions="StartAndExpand">
+					<Entry x:Name="selectedProjectText" Placeholder="Select Project" VerticalOptions="StartAndExpand" />
+					<Button x:Name="startBtn" Text="Start" Clicked="Start" VerticalOptions="End" />
+					<Button x:Name="stopBtn" Text="Stop" Clicked="Stop" IsVisible="false" VerticalOptions="End" />
+				</StackLayout>
+				<Label x:Name="header" XAlign="Center" />
 				<ListView x:Name="list" VerticalOptions="FillAndExpand">
 					<ListView.ItemTemplate>
 					    <DataTemplate>
 					      <ViewCell>
 					         <StackLayout Padding="15,0" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
 					             <Label Text="{Binding Name}" />
-								 <Button Text="Start" Clicked="Start" CommandParameter="{Binding .}" />
-								 <Button Text="Stop" Clicked="Stop" CommandParameter="{Binding .}" IsVisible="false" />
+					             <Button Text="Detail" Clicked="Detail" CommandParameter="{Binding .}" />
 					         </StackLayout>
 					      </ViewCell>
 					    </DataTemplate>
