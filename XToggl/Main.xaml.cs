@@ -18,42 +18,65 @@ namespace XToggl
 		private Project _selectedProject;
 		private DateTime? _startedDateTime;
 		private Event _upcomingEvent;
+		private List<Toggl.Project> _projects;
+		private Toggl.User _user;
 
 		public Main ()
 		{
 			InitializeComponent ();
 
+			list.ItemSelected += (sender, e) => {
+				((ListView)sender).SelectedItem = null;
+			};
+			Parallel.Task.Factory
+				.StartNew (() => InitializeEventProvider ());
+			Parallel.Task.Factory
+				.StartNew (() => Initialize ())
+				.ContinueWith ((task) => InitUI ());
+		}
+
+		private void InitializeEventProvider()
+		{
 			var eventProvider = DependencyService.Get<IEventProvider> ();
+			eventProvider.Init ();
 			_upcomingEvent = eventProvider.GetNextEvent ();
 
 			var eventNotification = DependencyService.Get<IEventNotification> ();
 			eventNotification.RegisterEvent (DateTime.Now.AddSeconds (3), PrintMsg);
+		}
 
+		private void Initialize()
+		{
 			var currentEntry = App.Toggl.TimeEntry.Current();
 			if (currentEntry.Id.HasValue) {
 				_startedTimeEntry = currentEntry;
 				_startedDateTime = DateTime.Parse (currentEntry.Start);
 			}
 
-			var u = App.Toggl.User.GetCurrent();
-			var projects = App.Toggl.Project.List ();
-			var cnt = projects.Count;
+			_user = App.Toggl.User.GetCurrent();
+			_projects = App.Toggl.Project.List();
+		}
 
-			header.Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), u.FullName);
-			list.ItemsSource = projects;
-			list.ItemSelected += (sender, e) => {
-				((ListView)sender).SelectedItem = null;
-			};
+		private void InitUI()
+		{
+			Device.BeginInvokeOnMainThread (() => {
+				startBtn.IsVisible = _startedTimeEntry == null;
+				stopBtn.IsVisible = !startBtn.IsVisible;
 
-			list.ItemTapped += (sender, e) => {
-				_selectedProject = e.Item as Project;
-				selectedProjectText.Text = _selectedProject.Name;
-			};
+				var cnt = _projects.Count;
+				header.Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), _user.FullName);
+				list.ItemsSource = _projects;
+				list.ItemTapped += (sender, e) => {
+					_selectedProject = e.Item as Project;
+					selectedProjectText.Text = _selectedProject.Name;
+				};
+			});
 		}
 
 		private void PrintMsg() {
 			AskForUpcomingEvent ();
 		}
+			
 
 		private async void AskForUpcomingEvent() {
 			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for Project 0 now?", "Yes", "No");

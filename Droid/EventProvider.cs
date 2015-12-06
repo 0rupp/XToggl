@@ -14,6 +14,11 @@ namespace XToggl.Droid
 
 		public EventProvider ()
 		{
+		}
+
+		#region IEventProvider implementation
+		void IEventProvider.Init ()
+		{
 			var calendarsUri = CalendarContract.Calendars.ContentUri;
 			string[] calendarsProjection = {
 				CalendarContract.Calendars.InterfaceConsts.Id,
@@ -32,8 +37,6 @@ namespace XToggl.Droid
 				} while (cursor.MoveToNext ());
 			cursor.Close ();
 		}
-
-		#region IEventProvider implementation
 
 		IList<Event> IEventProvider.GetEventsFromNow ()
 		{
