@@ -103,6 +103,23 @@
     <Reference Include="XLabs.Forms.Droid">
       <HintPath>..\packages\XLabs.Forms.2.0.5782\lib\MonoAndroid\XLabs.Forms.Droid.dll</HintPath>
     </Reference>
+    <Reference Include="XLabs.Caching">
+      <HintPath>..\packages\XLabs.Caching.2.0.5782\lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1\XLabs.Caching.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLite.Net">
+      <HintPath>..\packages\SQLite.Net-PCL.3.0.5\lib\MonoAndroid\SQLite.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLite.Net.Platform.XamarinAndroid">
+      <HintPath>..\packages\SQLite.Net-PCL.3.0.5\lib\MonoAndroid\SQLite.Net.Platform.XamarinAndroid.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLite.Net.Async">
+      <HintPath>..\packages\SQLite.Net.Async-PCL.3.0.5\lib\portable-win8+net45+wp8+wpa81+MonoAndroid1+MonoTouch1\SQLite.Net.Async.dll</HintPath>
+    </Reference>
+    <Reference Include="XLabs.Caching.SQLite">
+      <HintPath>..\packages\XLabs.Caching.SQLite.2.0.5782\lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1\XLabs.Caching.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XToggl\XToggl.csproj">
@@ -116,6 +133,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EventProvider.cs" />
     <Compile Include="EventNotification.cs" />
+    <Compile Include="SystemJsonSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -135,7 +153,25 @@
     <AndroidResource Include="Resources\drawable-hdpi\ic_action.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\ic_action.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\ic_action.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_calendar.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_gps.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_gps_filled.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_nfc.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_play.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_stop.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_calendar.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_gps.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_gps_filled.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_nfc.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_play.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_stop.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_calendar.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_gps.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_gps_filled.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_nfc.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_play.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_stop.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="..\packages\Xamarin.Forms.1.5.1.6471\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.1.5.1.6471\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets')" />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

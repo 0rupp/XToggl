@@ -4,29 +4,28 @@
     <MasterDetailPage.Master>
 		<ContentPage Title="XToggl" Icon="ic_action.png">
 			<StackLayout>
-            	<Button Text="Projects" Clicked="ChangePage" />
-            	<Button Text="Gps" Clicked="ChangePage" />
-            	<Button Text="NFC" Clicked="ChangePage" />
-            	<Button Text="Calendar" Clicked="ChangePage" />
+            	<Button Image="ic_gps_filled.png" Text="Gps" Clicked="ChangePage" />
+            	<Button Image="ic_nfc.png" Text="NFC" Clicked="ChangePage" />
+            	<Button Image="ic_calendar.png" Text="Calendar" Clicked="ChangePage" />
 			</StackLayout>
 		</ContentPage>
 	</MasterDetailPage.Master>
 	<MasterDetailPage.Detail>
 		<ContentPage>
-			<StackLayout>
-				<StackLayout Orientation="Horizontal" VerticalOptions="StartAndExpand">
-					<Entry x:Name="selectedProjectText" Placeholder="Select Project" VerticalOptions="StartAndExpand" />
-					<Button x:Name="startBtn" Text="Start" Clicked="Start" VerticalOptions="End" />
-					<Button x:Name="stopBtn" Text="Stop" Clicked="Stop" IsVisible="false" VerticalOptions="End" />
+			<StackLayout VerticalOptions="StartAndExpand">
+				<StackLayout Orientation="Horizontal" Padding="15, 0">
+					<Entry x:Name="selectedProjectText" Placeholder="Select Project" />
+					<Button x:Name="startBtn" Image="ic_play.png" Text="Start" Clicked="Start" IsEnabled="false" HorizontalOptions="EndAndExpand" />
+					<Button x:Name="stopBtn" Image="ic_stop.png" Text="Stop" Clicked="Stop" IsVisible="false" HorizontalOptions="EndAndExpand" />
 				</StackLayout>
 				<Label x:Name="header" XAlign="Center" />
-				<ListView x:Name="list" VerticalOptions="FillAndExpand">
+				<ListView x:Name="list" VerticalOptions="StartAndExpand">
 					<ListView.ItemTemplate>
 					    <DataTemplate>
 					      <ViewCell>
-					         <StackLayout Padding="15,0" Orientation="Horizontal" HorizontalOptions="StartAndExpand">
+					         <StackLayout Padding="15,0" Orientation="Horizontal">
 					             <Label Text="{Binding Name}" />
-					             <Button Text="Detail" Clicked="Detail" CommandParameter="{Binding .}" />
+					             <Button Text="Detail" Clicked="ProjectDetail" CommandParameter="{Binding .}" HorizontalOptions="EndAndExpand" />
 					         </StackLayout>
 					      </ViewCell>
 					    </DataTemplate>

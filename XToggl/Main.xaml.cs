@@ -9,6 +9,9 @@ using Toggl;
 using Toggl.Extensions;
 using Toasts.Forms.Plugin.Abstractions;
 using XToggl.Calendar;
+using XLabs.Caching;
+using XLabs.Ioc;
+using System.Collections.ObjectModel;
 
 namespace XToggl
 {
@@ -18,22 +21,47 @@ namespace XToggl
 		private Project _selectedProject;
 		private DateTime? _startedDateTime;
 		private Event _upcomingEvent;
-		private List<Toggl.Project> _projects;
-		private Toggl.User _user;
+		private ObservableCollection<Toggl.Project> _projects;
+
+		private ISimpleCache _cache;
+		private string ProjectsKey = "projects";
 
 		public Main ()
 		{
 			InitializeComponent ();
+
+			_cache = Resolver.Resolve<ISimpleCache>();
 
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;
 			};
 			Parallel.Task.Factory
 				.StartNew (() => InitializeEventProvider ());
-			Parallel.Task.Factory
-				.StartNew (() => Initialize ())
-				.ContinueWith ((task) => InitUI ());
+
+			CheckKeyAndDownloadNewContent ();
 		}
+
+		/// </summary>
+		private void CheckKeyAndDownloadNewContent()
+		{
+			if (_cache == null)
+			{
+				throw new ArgumentNullException(
+					"_cacheService",
+					new Exception("Native SimpleCache implementation wasn't found."));
+			}
+
+			var keyValue = _cache.Get<List<Toggl.Project>>(ProjectsKey);
+			_projects = keyValue != null ? new ObservableCollection<Toggl.Project> (keyValue) : 
+				new ObservableCollection<Toggl.Project> ();
+
+			list.ItemsSource = _projects;
+			Parallel.Task.Factory
+				.StartNew (() => InitUI ())
+				.ContinueWith ((task) => InitCurrentEntry ());
+		}
+
+		//_cache.FlushAll()
 
 		private void InitializeEventProvider()
 		{
@@ -45,32 +73,38 @@ namespace XToggl
 			eventNotification.RegisterEvent (DateTime.Now.AddSeconds (3), PrintMsg);
 		}
 
-		private void Initialize()
+		private void InitCurrentEntry()
 		{
 			var currentEntry = App.Toggl.TimeEntry.Current();
 			if (currentEntry.Id.HasValue) {
 				_startedTimeEntry = currentEntry;
 				_startedDateTime = DateTime.Parse (currentEntry.Start);
 			}
-
-			_user = App.Toggl.User.GetCurrent();
-			_projects = App.Toggl.Project.List();
+			Device.BeginInvokeOnMainThread (() => {
+				startBtn.IsEnabled = _startedTimeEntry == null;
+				startBtn.IsVisible = _startedTimeEntry == null;
+				stopBtn.IsVisible = !startBtn.IsVisible;
+			});
 		}
 
 		private void InitUI()
 		{
-			Device.BeginInvokeOnMainThread (() => {
-				startBtn.IsVisible = _startedTimeEntry == null;
-				stopBtn.IsVisible = !startBtn.IsVisible;
-
-				var cnt = _projects.Count;
-				header.Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), _user.FullName);
-				list.ItemsSource = _projects;
-				list.ItemTapped += (sender, e) => {
-					_selectedProject = e.Item as Project;
-					selectedProjectText.Text = _selectedProject.Name;
-				};
-			});
+			Parallel.Task.Factory
+				.StartNew (() => Device.BeginInvokeOnMainThread (() => {
+					var cnt = _projects.Count;
+					var name = App.User.FullName;
+					header.Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), name.Replace("_", " ").Replace("r", "R"));
+					list.ItemsSource = _projects;
+					list.ItemTapped += (sender, e) => {
+						_selectedProject = e.Item as Project;
+						selectedProjectText.Text = _selectedProject.Name;
+					};
+				}))
+				.ContinueWith ( (task) => {
+					_projects = new ObservableCollection<Toggl.Project>(App.Toggl.Project.List());
+					_cache.Remove(ProjectsKey);
+					_cache.Add(ProjectsKey, _projects.ToList());
+				});
 		}
 
 		private void PrintMsg() {
@@ -122,7 +156,7 @@ namespace XToggl
 
 		}
 
-		public void Detail(object sender, EventArgs e)
+		public void ProjectDetail(object sender, EventArgs e)
 		{
 			var btn = ((Button)sender);
 			var project = btn.CommandParameter as Project;

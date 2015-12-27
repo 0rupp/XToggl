@@ -14,6 +14,11 @@ using XLabs.Forms;
 using Xamarin.Forms;
 using XLabs.Platform.Services.Geolocation;
 using System.Collections.Generic;
+using XLabs.Ioc;
+using XLabs.Caching;
+using XLabs.Caching.SQLite;
+using XLabs.Serialization;
+using System.IO;
 
 namespace XToggl.Droid
 {
@@ -32,6 +37,22 @@ namespace XToggl.Droid
 			DependencyService.Register<EventProvider> ();
 			DependencyService.Register<EventNotification> ();
 			DependencyService.Register<Geolocator> ();
+			if (!Resolver.IsSet) {
+				var documents = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+				var pathToDatabase = Path.Combine(documents, "xforms.db");
+
+
+
+				var resolverContainer = new SimpleContainer();
+				resolverContainer
+					.Register<IJsonSerializer> (t => new SystemJsonSerializer())
+					.Register<ISimpleCache> (
+					t => new SQLiteSimpleCache (new SQLite.Net.Platform.XamarinAndroid.SQLitePlatformAndroid (),
+						new SQLite.Net.SQLiteConnectionString (pathToDatabase, true), t.Resolve<IJsonSerializer> ()));
+				var json = resolverContainer.GetResolver ().Resolve<IJsonSerializer> ();
+
+				Resolver.SetResolver(resolverContainer.GetResolver());
+			}
 
 			LoadApplication (new App ());
 		}
