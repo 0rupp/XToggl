@@ -9,11 +9,13 @@
 				         <StackLayout Padding="15,0" Orientation="Vertical">
 				             <Label Text="{Binding Name}" />
 				             <Label Text="{Binding StartDate, StringFormat='{0:G}'}" /> 
+				             <Label Text="{Binding Project.Name}" /> 
 				         </StackLayout>
 				      </ViewCell>
 				    </DataTemplate>
 				  </ListView.ItemTemplate>
 			</ListView>
+			<Button Text="Delete Cache" Clicked="DeleteCache" />
 		</StackLayout>
 	</ContentPage.Content>
 </ContentPage>

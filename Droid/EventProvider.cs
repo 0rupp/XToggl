@@ -86,7 +86,7 @@ namespace XToggl.Droid
 				CalendarContract.Events.InterfaceConsts.Title,
 				CalendarContract.Events.InterfaceConsts.Dtstart
 			};
-			var ms = (long)new TimeSpan (DateTime.Now.Subtract (new DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Ticks).TotalMilliseconds;
+			var ms = (long)new TimeSpan (DateTime.Now.Subtract (new DateTime (1970, 1, 1, 1, 0, 0, DateTimeKind.Utc)).Ticks).TotalMilliseconds;
 			var cursor = ContentResolver.Query (eventsUri, eventsProjection, "calendar_id = ? AND dtstart >= ?", new string[] {
 				calendarId.ToString (),
 				ms.ToString ()

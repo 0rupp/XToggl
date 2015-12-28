@@ -1,4 +1,5 @@
 ﻿using System;
+using Diag = System.Diagnostics;
 using Android.OS;
 
 namespace XToggl.Droid
@@ -19,6 +20,7 @@ namespace XToggl.Droid
 			var ms = SystemClock.UptimeMillis ();
 			var msSinceUpTime = eventDate.MsSinceUpTime (ms);
 			h.PostAtTime (action, msSinceUpTime);
+			Diag.Debug.WriteLine ("Event in  " + msSinceUpTime + " and " + eventDate.ToString ());
 		}
 
 		#endregion

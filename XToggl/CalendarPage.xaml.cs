@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 using Xamarin.Forms;
 using XToggl.Calendar;
+using XLabs.Caching;
+using XLabs.Ioc;
+using Toasts.Forms.Plugin.Abstractions;
 
 namespace XToggl
 {
@@ -18,6 +21,15 @@ namespace XToggl
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;
 			};
+			list.ItemTapped += (sender, e) => {
+				var calEvent = e.Item as Event;
+				Navigation.PushAsync (new Projects (calEvent));
+			};
+		}
+
+		public void DeleteCache(object sender, EventArgs e) {
+			ISimpleCache _cache = Resolver.Resolve<ISimpleCache> ();
+			_cache.Remove ("events");
 		}
 	}
 }

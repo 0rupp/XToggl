@@ -5,6 +5,7 @@ using System.ComponentModel;
 using Parallel = System.Threading.Tasks;
 using Xamarin.Forms;
 
+using Diag = System.Diagnostics;
 using Toggl;
 using Toggl.Extensions;
 using Toasts.Forms.Plugin.Abstractions;
@@ -17,6 +18,7 @@ namespace XToggl
 {
 	public partial class Main : MasterDetailPage
 	{
+		const int TIME_OUT = 30000;
 		private TimeEntry _startedTimeEntry;
 		private Project _selectedProject;
 		private DateTime? _startedDateTime;
@@ -38,39 +40,37 @@ namespace XToggl
 			Parallel.Task.Factory
 				.StartNew (() => InitializeEventProvider ());
 
-			CheckKeyAndDownloadNewContent ();
+			Parallel.Task.Factory
+				.StartNew (() => FetchProjectsFromCache ())
+				.ContinueWith ((task) => ShowProjectsAndUpdate ())
+				.ContinueWith ((task) => InitCurrentEntry ())
+				.ContinueWith ((task) => CheckForUpcomingEvents ());
 		}
 
-		/// </summary>
-		private void CheckKeyAndDownloadNewContent()
+		private void FetchProjectsFromCache()
 		{
-			if (_cache == null)
-			{
-				throw new ArgumentNullException(
-					"_cacheService",
-					new Exception("Native SimpleCache implementation wasn't found."));
-			}
-
 			var keyValue = _cache.Get<List<Toggl.Project>>(ProjectsKey);
 			_projects = keyValue != null ? new ObservableCollection<Toggl.Project> (keyValue) : 
 				new ObservableCollection<Toggl.Project> ();
 
 			list.ItemsSource = _projects;
-			Parallel.Task.Factory
-				.StartNew (() => InitUI ())
-				.ContinueWith ((task) => InitCurrentEntry ());
 		}
-
-		//_cache.FlushAll()
 
 		private void InitializeEventProvider()
 		{
 			var eventProvider = DependencyService.Get<IEventProvider> ();
 			eventProvider.Init ();
-			_upcomingEvent = eventProvider.GetNextEvent ();
+		}
 
-			var eventNotification = DependencyService.Get<IEventNotification> ();
-			eventNotification.RegisterEvent (DateTime.Now.AddSeconds (3), PrintMsg);
+		private void CheckForUpcomingEvents()
+		{
+			_upcomingEvent = App.UpcomingEvents.FirstOrDefault();
+			if (_upcomingEvent != null) {
+				Device.BeginInvokeOnMainThread (() => {
+					var eventNotification = DependencyService.Get<IEventNotification> ();
+					eventNotification.RegisterEvent (DateTime.Now.AddSeconds (3), PrintMsg); // _upcomingEvent.StartDate
+				});
+			}
 		}
 
 		private void InitCurrentEntry()
@@ -87,7 +87,7 @@ namespace XToggl
 			});
 		}
 
-		private void InitUI()
+		private void ShowProjectsAndUpdate()
 		{
 			Parallel.Task.Factory
 				.StartNew (() => Device.BeginInvokeOnMainThread (() => {
@@ -111,17 +111,21 @@ namespace XToggl
 			AskForUpcomingEvent ();
 		}
 			
-
 		private async void AskForUpcomingEvent() {
-			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for Project 0 now?", "Yes", "No");
+			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for " + _upcomingEvent.Name + " now?", "Yes", "No");
 			if (task) {
-				// später mal einen Bezug vom Event zum Projekt / TimeEntry herstellen !
-				var p = list.ItemsSource.Cast<Project> ().First ();
-				AddTimeEntry (p);
-			}
-			else {
+				StartTimeMeasurementForProject (_upcomingEvent.Project);
+			} else {
 				App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
-			}			
+			}
+		}
+
+		private void StartTimeMeasurementForProject (Project project)
+		{
+			StopTimeMeasurementIfRunning ();
+
+			_selectedProject = project;
+			Start (startBtn, EventArgs.Empty);
 		}
 
 		public void Start(object sender, EventArgs e)
@@ -140,7 +144,14 @@ namespace XToggl
 				.ContinueWith ((entry) => ChangeButtonVisibility (stopBtn));
 		}
 
-		public void Stop(object sender, EventArgs e)
+		private void StopTimeMeasurementIfRunning ()
+		{
+			if (_startedTimeEntry != null) {
+				Stop (stopBtn, EventArgs.Empty);
+			}
+		}
+
+		async public void Stop(object sender, EventArgs e)
 		{
 			var btn = ((Button)sender);
 			btn.IsVisible = false;
@@ -152,8 +163,7 @@ namespace XToggl
 						ChangeButtonVisibility (startBtn);
 						_startedTimeEntry = null;
 						_startedDateTime = null;
-					});
-
+					}).Wait(TIME_OUT);
 		}
 
 		public void ProjectDetail(object sender, EventArgs e)

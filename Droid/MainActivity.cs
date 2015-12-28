@@ -41,8 +41,6 @@ namespace XToggl.Droid
 				var documents = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
 				var pathToDatabase = Path.Combine(documents, "xforms.db");
 
-
-
 				var resolverContainer = new SimpleContainer();
 				resolverContainer
 					.Register<IJsonSerializer> (t => new SystemJsonSerializer())

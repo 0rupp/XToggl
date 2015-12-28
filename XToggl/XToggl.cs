@@ -4,6 +4,8 @@ using Xamarin.Forms;
 using Toasts.Forms.Plugin.Abstractions;
 using XLabs.Caching;
 using XLabs.Ioc;
+using XToggl.Calendar;
+using System.Collections.Generic;
 
 namespace XToggl
 {
@@ -12,6 +14,24 @@ namespace XToggl
 		// Cache Items
 		private static string UserKey = "user";
 		private static Toggl.User _user;
+
+		private static string EventsKey = "events";
+		private static IList<Event> _upcomingEvents;
+
+		public static IList<Event> UpcomingEvents 
+		{
+			get 
+			{
+				if (_upcomingEvents == null) {
+					ISimpleCache _cache = Resolver.Resolve<ISimpleCache>();	
+					_upcomingEvents  = _cache.Get<List<Event>> (EventsKey);
+				}
+				if (_upcomingEvents == null) {
+					_upcomingEvents = new List<Event> ();
+				}
+				return _upcomingEvents;
+			}
+		}
 
 		public static Toggl.User User
 		{
@@ -32,6 +52,7 @@ namespace XToggl
 				return _user;
 			} 
 		}
+
 		// App Items
 		const string apiKey = "211b283336f7055a287578fd1eed09bd";
 
@@ -41,11 +62,8 @@ namespace XToggl
 
 		public static IToastNotificator Notificator { get { return DependencyService.Get<IToastNotificator> (); } }
 
-
-
 		public App ()
 		{	
-			// new Main ()
 			MainPage = new NavigationPage (new Main());
 		}
 
@@ -63,6 +81,18 @@ namespace XToggl
 		{
 			// Handle when your app resumes
 		}
+
+		public static bool AddUpcomingEvent(Event calEvent) 
+		{
+			bool toAdd = !UpcomingEvents.Contains (calEvent);
+			if (toAdd) 
+			{
+				_upcomingEvents.Add (calEvent);
+				ISimpleCache _cache = Resolver.Resolve<ISimpleCache>();	
+				_cache.Remove (EventsKey);
+				_cache.Set(EventsKey, _upcomingEvents);
+			}
+			return toAdd;
+		}
 	}
 }
-

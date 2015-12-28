@@ -3,6 +3,8 @@
 namespace XToggl.Calendar
 {
 	public class Event {
+		public Event () {
+		}
 		public Event (long id, string name, DateTime startDate)
 		{
 			Id = id;
@@ -10,8 +12,9 @@ namespace XToggl.Calendar
 			StartDate = startDate;
 		}
 
-		public long Id { get; private set; }
-		public string Name { get; private set; }
-		public DateTime StartDate { get; private set; }
+		public long Id { get; set; }
+		public string Name { get; set; }
+		public DateTime StartDate { get; set; }
+		public Toggl.Project Project { get; set; }
 	}
 }
