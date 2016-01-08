@@ -30,13 +30,13 @@ namespace XToggl
 			var cnt = _projects.Count;
 			var name = App.User.FullName;
 			header.Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), name.Replace("_", " ").Replace("r", "R"));
-			list.ItemsSource = _projects.Where (proj => !App.UpcomingEvents.Any(ev=> proj.Equals(ev.Project)));
+			list.ItemsSource = _projects.Where (proj => !App.UpcomingEvents.Any(ev => proj.Id.Equals(ev.ProjectId)));
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;
 			};
 			list.ItemTapped += (sender, e) => {
 				var project = e.Item as Toggl.Project;
-				calEvent.Project = project;
+				calEvent.ProjectId = project.Id.Value;
 				var added = App.AddUpcomingEvent(calEvent);
 				App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Event notification " + (added ? "activated" : "already active") , TimeSpan.FromSeconds (1.0), null);
 				Navigation.PopAsync();

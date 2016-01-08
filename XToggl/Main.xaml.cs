@@ -12,7 +12,9 @@ using Toasts.Forms.Plugin.Abstractions;
 using XToggl.Calendar;
 using XLabs.Caching;
 using XLabs.Ioc;
+using XLabs.Web;
 using System.Collections.ObjectModel;
+using System.Net;
 
 namespace XToggl
 {
@@ -28,6 +30,7 @@ namespace XToggl
 		private ISimpleCache _cache;
 		private string ProjectsKey = "projects";
 
+
 		public Main ()
 		{
 			InitializeComponent ();
@@ -37,6 +40,8 @@ namespace XToggl
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;
 			};
+
+
 			Parallel.Task.Factory
 				.StartNew (() => InitializeEventProvider ());
 
@@ -45,6 +50,21 @@ namespace XToggl
 				.ContinueWith ((task) => ShowProjectsAndUpdate ())
 				.ContinueWith ((task) => InitCurrentEntry ())
 				.ContinueWith ((task) => CheckForUpcomingEvents ());
+			
+			fetch ();
+		}
+
+		private async void fetch(){
+			List<Event> events = await RestAPI.GetEventsWithProjects ();
+
+			var str = events.ToString ();
+		}
+
+
+		private void post() {
+
+			Event e = new Event() { Name = "Testiii", ProjectId = _projects.First().Id.Value, StartDate = DateTime.Now.AddDays(-2), UserId = App.User.Id.Value };
+			RestAPI.SetEventsWithProject (e);
 		}
 
 		private void FetchProjectsFromCache()
@@ -114,7 +134,8 @@ namespace XToggl
 		private async void AskForUpcomingEvent() {
 			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for " + _upcomingEvent.Name + " now?", "Yes", "No");
 			if (task) {
-				StartTimeMeasurementForProject (_upcomingEvent.Project);
+				var project = App.Toggl.Project.Get (_upcomingEvent.ProjectId);
+				StartTimeMeasurementForProject (project);
 			} else {
 				App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
 			}
@@ -130,6 +151,9 @@ namespace XToggl
 
 		public void Start(object sender, EventArgs e)
 		{
+			post ();
+			return;
+
 			if (_startedDateTime.HasValue) {
 				App.Notificator.Notify(ToastNotificationType.Info, 
 					"XToggl Message", "Please stop other tasks before starting a new one", TimeSpan.FromSeconds(2));
@@ -216,5 +240,11 @@ namespace XToggl
 		}
 
 	}
-}
 
+	public class RootObject
+	{
+		public int Id { get; set; }
+		public string FirstName { get; set; }
+		public string LastName { get; set; }
+	}
+}

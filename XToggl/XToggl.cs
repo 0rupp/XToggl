@@ -6,6 +6,8 @@ using XLabs.Caching;
 using XLabs.Ioc;
 using XToggl.Calendar;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace XToggl
 {
@@ -63,7 +65,7 @@ namespace XToggl
 		public static IToastNotificator Notificator { get { return DependencyService.Get<IToastNotificator> (); } }
 
 		public App ()
-		{	
+		{
 			MainPage = new NavigationPage (new Main());
 		}
 

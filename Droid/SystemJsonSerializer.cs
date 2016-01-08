@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Json;
 using XLabs.Serialization;
+using System.Runtime.Serialization;
 
 namespace XToggl.Droid
 {
@@ -31,7 +32,7 @@ namespace XToggl.Droid
 		/// <param name="stream">Stream to serialize to.</param>
 		public override void Serialize<T>(T obj, Stream stream)
 		{
-			var serializer = new DataContractJsonSerializer(obj.GetType());
+			var serializer = GetSerializerForType (obj.GetType());
 			serializer.WriteObject(stream, obj);
 		}
 
@@ -54,7 +55,7 @@ namespace XToggl.Droid
 		/// <returns>Deserialized object.</returns>
 		public override object Deserialize(Stream stream, System.Type type)
 		{
-			var serializer = new DataContractJsonSerializer(type);
+			var serializer = GetSerializerForType (type);			
 			return serializer.ReadObject(stream);
 		}
 
@@ -78,6 +79,14 @@ namespace XToggl.Droid
 		public override string Serialize<T>(T obj)
 		{
 			return (this as IStreamSerializer).SerializeToString(obj, System.Text.Encoding.UTF8);
+		}
+
+		private static DataContractJsonSerializer GetSerializerForType (System.Type type)
+		{
+			return type.AssemblyQualifiedName.Contains ("XToggl") ?
+				new DataContractJsonSerializer (type, new DataContractJsonSerializerSettings {
+					DateTimeFormat = new DateTimeFormat ("yyyy-MM-ddTHH:mm:sszzz") // 2016-01-08T00:00:00+01:00
+				}) : new DataContractJsonSerializer (type);
 		}
 	}	
 }
