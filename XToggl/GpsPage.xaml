@@ -2,8 +2,11 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="XToggl.GpsPage">
 	<ContentPage.Content>
 		<StackLayout>
+			<Button x:Name="btnChooseProject" Clicked="ChooseProject" Text="Link project to current position" IsEnabled="false"></Button>
 			<Button Clicked="GetPosition" Text="GetPosition"></Button>
 			<Label Text="No pos yet" x:Name="position"></Label>
+
+			<Button Text="Delete Cache" Clicked="DeleteCache" VerticalOptions="End" />
 		</StackLayout>
 	</ContentPage.Content>
 </ContentPage>

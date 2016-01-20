@@ -15,12 +15,12 @@ using XLabs.Ioc;
 using XLabs.Web;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Globalization;
 
 namespace XToggl
 {
 	public partial class Main : MasterDetailPage
 	{
-		const int TIME_OUT = 30000;
 		private TimeEntry _startedTimeEntry;
 		private Project _selectedProject;
 		private DateTime? _startedDateTime;
@@ -41,7 +41,6 @@ namespace XToggl
 				((ListView)sender).SelectedItem = null;
 			};
 
-
 			Parallel.Task.Factory
 				.StartNew (() => InitializeEventProvider ());
 
@@ -50,22 +49,24 @@ namespace XToggl
 				.ContinueWith ((task) => ShowProjectsAndUpdate ())
 				.ContinueWith ((task) => InitCurrentEntry ())
 				.ContinueWith ((task) => CheckForUpcomingEvents ());
-			
-			fetch ();
 		}
 
-		private async void fetch(){
-			List<Event> events = await RestAPI.GetEventsWithProjects ();
+	//	protected override async void OnAppearing(){
+	//	TODO establish link to gps 
+	//  }
 
-			var str = events.ToString ();
-		}
-
-
-		private void post() {
-
-			Event e = new Event() { Name = "Testiii", ProjectId = _projects.First().Id.Value, StartDate = DateTime.Now.AddDays(-2), UserId = App.User.Id.Value };
-			RestAPI.SetEventsWithProject (e);
-		}
+//		private async void fetch(){
+//			List<Event> events = await RestAPI.GetEventsWithProjects ();
+//
+//			var str = events.ToString ();
+//		}
+//
+//
+//		private void post() {
+//
+//			Event e = new Event() { Name = "Testiii", ProjectId = _projects.First().Id.Value, StartDate = DateTime.Now.AddDays(-2), UserId = App.User.Id.Value };
+//			RestAPI.SetEventsWithProject (e);
+//		}
 
 		private void FetchProjectsFromCache()
 		{
@@ -98,12 +99,12 @@ namespace XToggl
 			var currentEntry = App.Toggl.TimeEntry.Current();
 			if (currentEntry.Id.HasValue) {
 				_startedTimeEntry = currentEntry;
-				_startedDateTime = DateTime.Parse (currentEntry.Start);
+				_startedDateTime = currentEntry.Start.TogglDateTimeWorkAround ();
 			}
 			Device.BeginInvokeOnMainThread (() => {
 				startBtn.IsEnabled = _startedTimeEntry == null;
 				startBtn.IsVisible = _startedTimeEntry == null;
-				stopBtn.IsVisible = !startBtn.IsVisible;
+				stopBtn.IsVisible = _startedTimeEntry != null;
 			});
 		}
 
@@ -113,7 +114,7 @@ namespace XToggl
 				.StartNew (() => Device.BeginInvokeOnMainThread (() => {
 					var cnt = _projects.Count;
 					var name = App.User.FullName;
-					header.Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), name.Replace("_", " ").Replace("r", "R"));
+					list.Header = new Label { Text = string.Format ("{0} Project{1} for {2}", cnt, (cnt == 1 ? "" : "s"), name.Replace("_", " ").Replace("r", "R")), XAlign = TextAlignment.Center };
 					list.ItemsSource = _projects;
 					list.ItemTapped += (sender, e) => {
 						_selectedProject = e.Item as Project;
@@ -132,12 +133,14 @@ namespace XToggl
 		}
 			
 		private async void AskForUpcomingEvent() {
-			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for " + _upcomingEvent.Name + " now?", "Yes", "No");
+			
+			var project = App.Toggl.Project.Get (_upcomingEvent.ProjectId);
+			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for " + _upcomingEvent.Name + " (project: " + project.Name + ") now?", "Yes", "No");
 			if (task) {
-				var project = App.Toggl.Project.Get (_upcomingEvent.ProjectId);
+				
 				StartTimeMeasurementForProject (project);
 			} else {
-				App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
+				await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
 			}
 		}
 
@@ -146,16 +149,15 @@ namespace XToggl
 			StopTimeMeasurementIfRunning ();
 
 			_selectedProject = project;
+			selectedProjectText.Text = _selectedProject.Name;
+
 			Start (startBtn, EventArgs.Empty);
 		}
 
-		public void Start(object sender, EventArgs e)
+		public async void Start(object sender, EventArgs e)
 		{
-			post ();
-			return;
-
 			if (_startedDateTime.HasValue) {
-				App.Notificator.Notify(ToastNotificationType.Info, 
+				await App.Notificator.Notify(ToastNotificationType.Info, 
 					"XToggl Message", "Please stop other tasks before starting a new one", TimeSpan.FromSeconds(2));
 				return;
 			}
@@ -163,7 +165,7 @@ namespace XToggl
 			var btn = ((Button)sender);
 			btn.IsVisible = false;
 
-			Parallel.Task.Factory
+			await Parallel.Task.Factory
 				.StartNew (() => AddTimeEntry (_selectedProject))
 				.ContinueWith ((entry) => ChangeButtonVisibility (stopBtn));
 		}
@@ -175,7 +177,7 @@ namespace XToggl
 			}
 		}
 
-		async public void Stop(object sender, EventArgs e)
+		public void Stop(object sender, EventArgs e)
 		{
 			var btn = ((Button)sender);
 			btn.IsVisible = false;
@@ -187,7 +189,7 @@ namespace XToggl
 						ChangeButtonVisibility (startBtn);
 						_startedTimeEntry = null;
 						_startedDateTime = null;
-					}).Wait(TIME_OUT);
+					});
 		}
 
 		public void ProjectDetail(object sender, EventArgs e)
@@ -211,21 +213,21 @@ namespace XToggl
 		private void AddTimeEntry(Project project) 
 		{
 			_startedDateTime = DateTime.Now;
-
-			_startedTimeEntry = App.Toggl.TimeEntry.Add (
-				new TimeEntry {
-					IsBillable = false,
-					CreatedWith = "TogglAPI.Net",
-					Start = _startedDateTime.Value.ToIsoDateStr (),
-					Duration = _startedDateTime.Value.ToTogglStartDuration (),
-					WorkspaceId = project.WorkspaceId,
-					ProjectId = project.Id
-				});
+			var entry = new TimeEntry {
+				IsBillable = false,
+				CreatedWith = "TogglAPI.Net",
+				Start = _startedDateTime.Value.ToIsoDateStr (),
+				Duration = _startedDateTime.Value.ToTogglStartDuration (),
+				WorkspaceId = project.WorkspaceId,
+				ProjectId = project.Id
+			};
+			_startedTimeEntry = App.Toggl.TimeEntry.Add (entry);
 		}
 
 		private void EditTimeEntry() 
 		{
 			var now = DateTime.Now;
+			_startedTimeEntry.Start = _startedTimeEntry.Start.TogglDateTimeWorkAroundStr();
 			_startedTimeEntry.Stop = now.ToIsoDateStr ();
 			_startedTimeEntry.Duration = _startedDateTime.Value.DifferenceInSeconds (now);
 
@@ -236,15 +238,9 @@ namespace XToggl
 		{
 			Device.BeginInvokeOnMainThread (() => {
 				btn.IsVisible = !btn.IsVisible;
+				btn.IsEnabled = btn.IsVisible;
 			});
 		}
 
-	}
-
-	public class RootObject
-	{
-		public int Id { get; set; }
-		public string FirstName { get; set; }
-		public string LastName { get; set; }
 	}
 }

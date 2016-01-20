@@ -17,6 +17,7 @@ namespace XToggl
 
 			var eventProvider = DependencyService.Get<IEventProvider> ();
 			var data = eventProvider.GetEventsFromNow ();
+			list.Header = new Label { Text = data.Count + " events", XAlign = TextAlignment.Center };
 			list.ItemsSource = data;
 			list.ItemSelected += (sender, e) => {
 				((ListView)sender).SelectedItem = null;

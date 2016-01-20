@@ -19,7 +19,7 @@ namespace XToggl
 				((ListView)sender).SelectedItem = null;
 			};
 			var cnt = timeEntries.Count;
-			header.Text = cnt + " time entr" + (cnt == 1 ? "y" : "ies");
+			list.Header = new Label { Text = cnt + " time entr" + (cnt == 1 ? "y" : "ies"), XAlign = TextAlignment.Center };
 		}
 	}
 }

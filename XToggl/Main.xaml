@@ -18,7 +18,6 @@
 					<Button x:Name="startBtn" Image="ic_play.png" Text="Start" Clicked="Start" IsEnabled="false" HorizontalOptions="EndAndExpand" />
 					<Button x:Name="stopBtn" Image="ic_stop.png" Text="Stop" Clicked="Stop" IsVisible="false" HorizontalOptions="EndAndExpand" />
 				</StackLayout>
-				<Label x:Name="header" XAlign="Center" />
 				<ListView x:Name="list" VerticalOptions="StartAndExpand">
 					<ListView.ItemTemplate>
 					    <DataTemplate>

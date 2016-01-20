@@ -8,6 +8,7 @@ using XToggl.Calendar;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Threading.Tasks;
 
 namespace XToggl
 {
@@ -20,12 +21,15 @@ namespace XToggl
 		private static string EventsKey = "events";
 		private static IList<Event> _upcomingEvents;
 
+		private static string GpsPositionsKey = "gpsPositions";
+		private static IList<GpsPosition> _gpsPositions;
+
 		public static IList<Event> UpcomingEvents 
 		{
 			get 
 			{
 				if (_upcomingEvents == null) {
-					ISimpleCache _cache = Resolver.Resolve<ISimpleCache>();	
+					ISimpleCache _cache = Resolver.Resolve<ISimpleCache>();
 					_upcomingEvents  = _cache.Get<List<Event>> (EventsKey);
 				}
 				if (_upcomingEvents == null) {
@@ -53,6 +57,23 @@ namespace XToggl
 				}
 				return _user;
 			} 
+		}
+
+		public async static Task<IList<GpsPosition>> GetGpsPositions()
+		{
+			if (_gpsPositions == null) {
+				ISimpleCache _cache = Resolver.Resolve<ISimpleCache>();	
+				_gpsPositions = _cache.Get<List<GpsPosition>> (GpsPositionsKey);
+			}
+			if (_gpsPositions == null) {
+				ISimpleCache _cache = Resolver.Resolve<ISimpleCache>();
+				_cache.Remove(GpsPositionsKey);
+				_gpsPositions = await GetPositionsFromApi();
+				if (_gpsPositions == null)
+					throw new InvalidOperationException("GpsPositions");
+				_cache.Add (GpsPositionsKey, _gpsPositions);
+			}
+			return _gpsPositions;
 		}
 
 		// App Items
@@ -95,6 +116,26 @@ namespace XToggl
 				_cache.Set(EventsKey, _upcomingEvents);
 			}
 			return toAdd;
+		}
+
+		public static bool AddGpsPosition(GpsPosition gpsPosition) 
+		{
+			bool toAdd = !_gpsPositions.Contains (gpsPosition);
+			if (toAdd)
+			{
+				_gpsPositions.Add (gpsPosition);
+				ISimpleCache _cache = Resolver.Resolve<ISimpleCache>();	
+				_cache.Remove (GpsPositionsKey);
+				_cache.Set(GpsPositionsKey, _gpsPositions);
+
+				RestAPI.SetGpsPositionsWithProject (gpsPosition);
+			}
+			return toAdd;
+		}
+
+		private static async Task<List<GpsPosition>> GetPositionsFromApi() 
+		{
+			return await RestAPI.GetGpsPositionsWithProjects ().ConfigureAwait(false);
 		}
 	}
 }
