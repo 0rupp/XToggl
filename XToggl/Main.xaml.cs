@@ -51,16 +51,11 @@ namespace XToggl
 				.ContinueWith ((task) => CheckForUpcomingEvents ());
 		}
 
-	//	protected override async void OnAppearing(){
-	//	TODO establish link to gps 
-	//  }
+		protected override async void OnAppearing(){
+			List<GpsPosition> pos = await RestAPI.GetGpsPositionsWithProjects ();
+			await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "gps pos: " + pos.Count, TimeSpan.FromSeconds (1.0), null);
+		}
 
-//		private async void fetch(){
-//			List<Event> events = await RestAPI.GetEventsWithProjects ();
-//
-//			var str = events.ToString ();
-//		}
-//
 //
 //		private void post() {
 //
