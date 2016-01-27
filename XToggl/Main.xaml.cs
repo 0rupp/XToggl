@@ -56,13 +56,6 @@ namespace XToggl
 			await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "gps pos: " + pos.Count, TimeSpan.FromSeconds (1.0), null);
 		}
 
-//
-//		private void post() {
-//
-//			Event e = new Event() { Name = "Testiii", ProjectId = _projects.First().Id.Value, StartDate = DateTime.Now.AddDays(-2), UserId = App.User.Id.Value };
-//			RestAPI.SetEventsWithProject (e);
-//		}
-
 		private void FetchProjectsFromCache()
 		{
 			var keyValue = _cache.Get<List<Toggl.Project>>(ProjectsKey);
@@ -120,6 +113,9 @@ namespace XToggl
 					_projects = new ObservableCollection<Toggl.Project>(App.Toggl.Project.List());
 					_cache.Remove(ProjectsKey);
 					_cache.Add(ProjectsKey, _projects.ToList());
+					Device.BeginInvokeOnMainThread (() => {
+						list.ItemsSource = _projects;
+					});
 				});
 		}
 

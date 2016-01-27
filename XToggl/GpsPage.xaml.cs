@@ -19,9 +19,22 @@ namespace XToggl
 		public GpsPage ()
 		{
 			InitializeComponent ();
+		}
+
+		protected override void OnAppearing ()
+		{
 			gps = new Gps ();
 			gps.Geolocator.PositionError += OnListeningError;
 			gps.Geolocator.PositionChanged += OnPositionChanged;
+			base.OnAppearing ();
+		}
+
+		protected override void OnDisappearing ()
+		{
+			gps.Geolocator.PositionError -= OnListeningError;
+			gps.Geolocator.PositionChanged -= OnPositionChanged;
+			gps = null;
+			base.OnDisappearing ();
 		}
 
 		public async void GetPosition (object sender, EventArgs e) 
