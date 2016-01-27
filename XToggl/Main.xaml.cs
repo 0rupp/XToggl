@@ -16,6 +16,7 @@ using XLabs.Web;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Globalization;
+using XLabs.Platform.Services.Geolocation;
 
 namespace XToggl
 {
@@ -29,7 +30,8 @@ namespace XToggl
 
 		private ISimpleCache _cache;
 		private string ProjectsKey = "projects";
-
+		private Gps gps;
+		private List<GpsPosition> _linkedGpsPositions;
 
 		public Main ()
 		{
@@ -52,8 +54,20 @@ namespace XToggl
 		}
 
 		protected override async void OnAppearing(){
-			List<GpsPosition> pos = await RestAPI.GetGpsPositionsWithProjects ();
-			await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "gps pos: " + pos.Count, TimeSpan.FromSeconds (1.0), null);
+			gps = new Gps ();
+			gps.Geolocator.PositionError += OnListeningError;
+			gps.Geolocator.PositionChanged += OnPositionChanged;
+			_linkedGpsPositions = await RestAPI.GetGpsPositionsWithProjects ();
+
+			base.OnAppearing ();
+		}
+
+		protected override void OnDisappearing ()
+		{
+			gps.Geolocator.PositionError -= OnListeningError;
+			gps.Geolocator.PositionChanged -= OnPositionChanged;
+			gps = null;
+			base.OnDisappearing ();
 		}
 
 		private void FetchProjectsFromCache()
@@ -127,11 +141,10 @@ namespace XToggl
 			
 			var project = App.Toggl.Project.Get (_upcomingEvent.ProjectId);
 			var task = await DisplayAlert ("XToggl", "Do you want to start time tracking for " + _upcomingEvent.Name + " (project: " + project.Name + ") now?", "Yes", "No");
-			if (task) {
-				
+			if (task) {				
 				StartTimeMeasurementForProject (project);
 			} else {
-				await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not startet", TimeSpan.FromSeconds (1.0), null);
+				await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not started", TimeSpan.FromSeconds (1.0), null);
 			}
 		}
 
@@ -233,5 +246,50 @@ namespace XToggl
 			});
 		}
 
+		/// <summary>
+		/// Handles the <see cref="E:ListeningError" /> event.
+		/// </summary>
+		/// <param name="sender">The sender.</param>
+		/// <param name="e">The <see cref="PositionErrorEventArgs"/> instance containing the event data.</param>
+		private async void OnListeningError(object sender, PositionErrorEventArgs e)
+		{
+			var msg = e.Error.ToString () == "PositionError" ? "No GPS" : e.Error.ToString ();
+			await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", msg, TimeSpan.FromSeconds (1.0), null);
+		}
+
+		/// <summary>
+		/// Handles the <see cref="E:PositionChanged" /> event.
+		/// </summary>
+		/// <param name="sender">The sender.</param>
+		/// <param name="e">The <see cref="PositionEventArgs"/> instance containing the event data.</param>
+		private async void OnPositionChanged(object sender, PositionEventArgs e)
+		{
+			if (_linkedGpsPositions == null)
+				return;
+			
+			foreach (GpsPosition position in _linkedGpsPositions) {
+
+				double distanceInKm = GeoCoordinates.DistanceTo (position.Latitude, position.Longitude, e.Position.Latitude, e.Position.Longitude);
+				if (distanceInKm < 0.1) { // closer than 100 meters
+					var linkedProject = _projects.FirstOrDefault (p => p.Id.GetValueOrDefault () == position.ProjectId); // try load from cache
+					if (linkedProject == null) { // try load from api
+						linkedProject = App.Toggl.Project.Get (position.ProjectId); 
+					}
+					if(linkedProject != null ) { // might still be null, when it has been deleted
+
+						bool alreadyRunning = _selectedProject != null && _selectedProject.Id.GetValueOrDefault () == linkedProject.Id.Value;
+						if (alreadyRunning)
+							return;
+
+						var task = await DisplayAlert("XToggl GPS", "You entered an area linked to '" + linkedProject.Name + "'. Do you want to start time tracking for this project?", "Yes", "No");			
+						if (task) {				
+							StartTimeMeasurementForProject (linkedProject);
+						} else {
+							await App.Notificator.Notify (ToastNotificationType.Info, "XToggl", "Time tracking not started", TimeSpan.FromSeconds (1.0), null);
+						}
+					}
+				}
+			}
+		}
 	}
 }
