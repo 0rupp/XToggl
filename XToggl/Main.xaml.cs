@@ -88,7 +88,7 @@ namespace XToggl
 		private void CheckForUpcomingEvents()
 		{
 			_upcomingEvent = App.UpcomingEvents.FirstOrDefault();
-			if (_upcomingEvent != null) {
+			if (_upcomingEvent != null && (_startedTimeEntry == null || _startedTimeEntry.ProjectId != _upcomingEvent.ProjectId )) {
 				Device.BeginInvokeOnMainThread (() => {
 					var eventNotification = DependencyService.Get<IEventNotification> ();
 					eventNotification.RegisterEvent (DateTime.Now.AddSeconds (3), PrintMsg); // _upcomingEvent.StartDate
@@ -207,8 +207,6 @@ namespace XToggl
 		{
 			var btn = sender as Button;
 			if(btn.Text.ToLower() == "gps")
-				Navigation.PushAsync(new GpsPage());
-			else if(btn.Text.ToLower() == "nfc")
 				Navigation.PushAsync(new GpsPage());
 			else if(btn.Text.ToLower() == "calendar")
 				Navigation.PushAsync(new CalendarPage());

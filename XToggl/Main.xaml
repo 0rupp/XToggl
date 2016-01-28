@@ -5,7 +5,6 @@
 		<ContentPage Title="XToggl" Icon="ic_action.png">
 			<StackLayout>
             	<Button Image="ic_gps_filled.png" Text="Gps" Clicked="ChangePage" />
-            	<Button Image="ic_nfc.png" Text="NFC" Clicked="ChangePage" />
             	<Button Image="ic_calendar.png" Text="Calendar" Clicked="ChangePage" />
 			</StackLayout>
 		</ContentPage>
